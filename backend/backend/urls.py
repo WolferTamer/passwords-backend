@@ -20,7 +20,7 @@ from api.views import create_account, login, home
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    # path('api/', include('api.urls'))
+    path('api/', include('api.urls')),
     path('signup/', create_account, name='signup'),
     path('login/', login, name='login'),
     # path('home/', home, name='home'),

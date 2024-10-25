@@ -8,3 +8,13 @@ class Example(models.Model):
     def __str__(self):
         return self.name
     
+# Account is a saved password/account pair to be returned, not the one they made with us.
+class Account(models.Model):
+    title = models.CharField(max_length=100)
+    site = models.CharField(max_length=100)
+    username = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='User', default=1)
+
+    def __str__(self):
+        return self.title
