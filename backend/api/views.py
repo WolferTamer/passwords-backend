@@ -31,7 +31,7 @@ def signup(request):
                 serializer.save()
                 user = User.objects.get(username=request.data['username'])
                 user.set_password(request.data['password'])
-                user.save
+                user.save()
                 token = Token.objects.create(user=user)
                 return Response({"token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
         except IntegrityError:
@@ -72,7 +72,7 @@ def add_account(request):
 @permission_classes([IsAuthenticated])
 def get_account(request):
     try:
-        account = Account.objects.get(owner=request.user,site=request.data["site"])
+        account = Account.objects.get(owner=request.user,site=request.query_params.get("site"))
         serializer = AccountSerializer(instance=account)
         return Response({"account":serializer.data})
     except Account.DoesNotExist:
