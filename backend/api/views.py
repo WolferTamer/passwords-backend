@@ -12,6 +12,9 @@ from django.contrib import messages
 from django.db import IntegrityError
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .encryption import encryption, decrypt_msg, gen_key
 
 from .permissions import IsOwnerPermission
 
@@ -24,16 +27,21 @@ def get_example(request):
 
 @api_view(['POST'])
 def signup(request):
-    if request.data["username"] and request.data["password"]:
+    if request.data.get("username") and request.data.get("password"):
         try:
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
-                user = User.objects.get(username=request.data['username'])
-                user.set_password(request.data['password'])
+                key = gen_key()
+                encrypted_password = encryption(request.data['password'], key)
+                user = User(username=request.data['username'])
+                user.set_password(encrypted_password)
+                
+                #serializer.save()
+                #user = User.objects.get(username=request.data['username'])
+                #user.set_password(request.data['password'])
                 user.save()
                 token = Token.objects.create(user=user)
-                return Response({"token":token.key,"user":serializer.data}, status=status.HTTP_201_CREATED)
+                return JsonResponse({"token":token.key,"user":serializer.data, "encryption_key": key.hex()}, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({"error":"Username Already in Use"},status=status.HTTP_400_BAD_REQUEST)
     return Response({"error":"Username or Password not provided"},status=status.HTTP_400_BAD_REQUEST)

@@ -5,9 +5,9 @@ from .views import get_example, create_account, login, home, signup, get_auth, t
 
 urlpatterns = [
     path('example/', get_example, name='get_example'),
-    path('signup', signup, name='signup'),
-    path('login', get_auth, name='get_auth'),
+    path('signup/', signup, name='signup'),
+    path('login/', get_auth, name='get_auth'),
     path('test_token/', test_token, name='test_token'),
-    path('add_account', add_account, name='add_account'),
-    path('account', get_account, name='get_account')
+    path('add_account/', add_account, name='add_account'),
+    path('account/', get_account, name='get_account')
 ]
