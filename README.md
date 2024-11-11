@@ -2,7 +2,7 @@
 
 Ensure Python and pip are installed
 
-Install Django with `pip install django djangorestframwork` in an admin-level console
+Install Django with `pip install django djangorestframwork django-cors-headers pycryptodome` in an admin-level console
 
 Navigate to the `backend` file inside a console
 
