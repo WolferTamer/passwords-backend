@@ -18,3 +18,10 @@ class Account(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['site', 'owner'], name='unique_site_owner_combination'
+            )
+        ]
