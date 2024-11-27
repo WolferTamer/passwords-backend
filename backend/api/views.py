@@ -27,13 +27,14 @@ def get_example(request):
 
 @api_view(['POST'])
 def signup(request):
-    if request.data.get("username") and request.data.get("password"):
+    if request.data.get("username") and request.data.get("password") and request.data.get("email"):
         try:
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
                 key = gen_key()
                 encrypted_password = encryption(request.data['password'], key)
                 user = User(username=request.data['username'])
+                user.email = request.data['email']
                 user.set_password(encrypted_password)
                 
                 #serializer.save()
@@ -42,9 +43,11 @@ def signup(request):
                 user.save()
                 token = Token.objects.create(user=user)
                 return JsonResponse({"token":token.key,"user":serializer.data, "encryption_key": key.hex()}, status=status.HTTP_201_CREATED)
+            else:
+                return JsonResponse({"errors":serializer.errors},status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError:
             return Response({"error":"Username Already in Use"},status=status.HTTP_400_BAD_REQUEST)
-    return Response({"error":"Username or Password not provided"},status=status.HTTP_400_BAD_REQUEST)
+    return Response({"error":"Username, password, or email not provided"},status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def get_auth(request):
