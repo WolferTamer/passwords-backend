@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .cryption import encryption, decrypt_msg, gen_key
+from .key_storage import store_user_key, get_user_key
 
 from .permissions import IsOwnerPermission
 
@@ -31,15 +32,19 @@ def signup(request):
         try:
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
-                key = gen_key()
-                encrypted_password = encryption(request.data['password'], key)
+                #removing
+                #key = gen_key()
+                #removing encryption on user password
+                #encrypted_password = encryption(request.data['password'], key)
                 user = User(username=request.data['username'])
-                user.set_password(encrypted_password)
+                #user.set_password(encrypted_password)
                 
                 #serializer.save()
                 #user = User.objects.get(username=request.data['username'])
-                #user.set_password(request.data['password'])
+                user.set_password(request.data['password'])
                 user.save()
+                #storing the user's encryption key in key storage file
+                store_user_key(request.data['username'])
                 token = Token.objects.create(user=user)
                 return JsonResponse({"token":token.key,"user":serializer.data, "encryption_key": key.hex()}, status=status.HTTP_201_CREATED)
         except IntegrityError:
@@ -68,7 +73,12 @@ def add_account(request):
     data = request.data
     if data["username"] and data["password"] and data["site"] and data["title"]:
         try:
-            account = Account.objects.create(username=data["username"],password=data["password"],site=data["site"],title=data["title"],owner=request.user)
+            # generating password before account table storing
+            key = get_user_key(request.user.username)
+            encrypted_password = encryption(data["password"], key)
+            
+            # changing password=data["password"] to password=encrypted_password
+            account = Account.objects.create(username=data["username"],password=encrypted_password,site=data["site"],title=data["title"],owner=request.user)
             serializer = AccountSerializer(account)
             return Response({"account":serializer.data}, status=status.HTTP_201_CREATED)
         except IntegrityError:

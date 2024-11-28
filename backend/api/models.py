@@ -13,11 +13,14 @@ class Account(models.Model):
     title = models.CharField(max_length=100)
     site = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='User', default=1)
+    #password = models.CharField(max_length=100)
+    
+    #storing the encrypted password
+    encrypted_password = models.TextField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts', default=1)
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.site})"
     
     class Meta:
         constraints = [
