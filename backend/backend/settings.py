@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ds3hj(+bgc33o2$++2e0za@2uwd5pb(1iog6z!y5^ya@b(ih*3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["3.146.152.91:8000","ec2-3-146-152-91.us-east-2.compute.amazonaws.com"]
 
 
 # Application definition
@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ALLOWED_ORIGINS = ["http://3.146.152.91:8000","http://ec2-3-146-152-91.us-esat-2.compute.amazonaws.com"]
 
 ROOT_URLCONF = 'backend.urls'
 
