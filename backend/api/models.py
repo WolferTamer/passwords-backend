@@ -62,7 +62,6 @@ class EmailOTPDevice(models.Model):
         return True
 
     def verify_token(self, token):
-        """Verifies the OTP and checks if it has expired."""
         if not self.token or not self.created_at:
             return False
 

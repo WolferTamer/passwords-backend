@@ -36,13 +36,11 @@ def get_example(request):
 
 @api_view(['POST'])
 def signup(request):
-    email = request.data.get("email")
     if request.data.get("email") and request.data.get("password"):
         try:
             serializer = UserSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
-                user = User.objects.get(username=request.data['email'])
+                user = User(username=request.data['email'], email=request.data['email'])                
                 user.set_password(request.data['password'])
                 user.save()
                 token = Token.objects.create(user=user)
@@ -86,28 +84,27 @@ def add_account(request):
 def get_account(request):
     try:
         account = Account.objects.get(owner=request.user,site=request.query_params.get("site"))
+        site=request.query_params.get("site")
         serializer = AccountSerializer(instance=account)
-        return Response({"account":serializer.data})
+        otp_device, created = EmailOTPDevice.objects.get_or_create(email=request.user.email) # Check if OTP exists for the user
+        token = request.query_params.get("token")
+        print(token)
+        print(site)
+        if token:
+            if otp_device.verify_token(token): # Uses verify_token from EmailOTPDevide to validate token
+                # If the token is valid, return the account information
+                return Response({"message": "OTP sent successfully", 
+                                "account":serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Invalid or expired OTP code."}, status=400)
+        # If there is no code sent, send a new OTP
+        try:
+            otp_device.generate_challenge(email=request.user.email)
+            return Response({"message": "OTP sent successfully"}, status=status.HTTP_200_OK)
+        except Exception as e:
+                    return Response({"error": f"Failed to sent OTP: {str(e)}"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Account.DoesNotExist:
         return Response({}, status=status.HTTP_404_NOT_FOUND)
-    
-# @api_view(['POST'])
-# def send_email(request):
-#     if request.method == 'POST':
-#         serializer = EmailSerializer(data=request.data)
-#         if serializer.is_valid():
-#             subject = serializer.validated_data['subject']
-#             message = serializer.validated_data['message']
-#             recipient = serializer.validated_data['recipient']
-#             email_from = os.getenv('EMAIL_HOST_USER')
-
-#             try:
-#                 send_mail(subject, message, email_from, [recipient])
-#                 return Response({"message": "Email sent successfully!"}, status=status.HTTP_200_OK)
-#             except Exception as e:
-#                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def send_email(request):
