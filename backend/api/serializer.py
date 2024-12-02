@@ -18,4 +18,4 @@ class AccountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['owner','site','title','username','password']
+        fields = ['owner','site','title','username','encrypted_password']

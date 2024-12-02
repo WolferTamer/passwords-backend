@@ -71,19 +71,20 @@ def test_token(request):
 @permission_classes([IsAuthenticated])
 def add_account(request):
     data = request.data
-    if data["username"] and data["password"] and data["site"] and data["title"]:
+    if data["username"] and data["password"] and data["site"]:
         try:
             # encryption key for logged in user
             key = get_user_key(request.user.username)
             if not key:
                 return Response({"error": "Encyption key is not found for the user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             encrypted_password = encryption(data["password"], key)
-            
+
             # changing password=data["password"] to password=encrypted_password
-            account = Account.objects.create(username=data["username"],password=encrypted_password,site=data["site"],title=data["title"],owner=request.user)
+            account = Account.objects.create(username=data["username"],encrypted_password=encrypted_password,site=data["site"],title="test",owner=request.user)
             serializer = AccountSerializer(account)
             return Response({"account":serializer.data}, status=status.HTTP_201_CREATED)
-        except IntegrityError:
+        except IntegrityError as e:
+            print("Integrety: ", e)
             return Response({"errors":"Had an integrity error"},status=status.HTTP_400_BAD_REQUEST)
     return Response({},status=status.HTTP_400_BAD_REQUEST)
 
@@ -99,7 +100,7 @@ def get_account(request):
         key = get_user_key(request.user.username)
         if not key:
             return Response({"error": "Encryption key not found for the user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        decrypted_password = decrypt_msg(account.password, key)
+        decrypted_password = decrypt_msg(account.encrypted_password, key)
         serializer = AccountSerializer(instance=account)
         #adding decrypted password to serialized account data
         account_data = serializer.data

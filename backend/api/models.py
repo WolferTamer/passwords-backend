@@ -16,7 +16,7 @@ class Account(models.Model):
     #password = models.CharField(max_length=100)
     
     #storing the encrypted password
-    encrypted_password = models.TextField()
+    encrypted_password = models.TextField(default="password")
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='accounts', default=1)
 
     def __str__(self):
