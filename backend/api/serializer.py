@@ -9,9 +9,12 @@ class ExampleSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ['id','username']
+        fields = ['id', 'email', 'password']
 
 class AccountSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=True)
@@ -19,3 +22,8 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ['owner','site','title','username','encrypted_password']
+        
+class EmailSerializer(serializers.Serializer):
+    subject = serializers.CharField(max_length=255)
+    message = serializers.CharField()
+    recipient = serializers.EmailField()
