@@ -44,7 +44,7 @@ def signup(request):
                 user.set_password(request.data['password'])
                 user.save()
                 #storing the user's encryption key in key storage file
-                store_user_key(request.data['username'])
+                key = store_user_key(request.data['username'])
                 token = Token.objects.create(user=user)
                 return JsonResponse({"token":token.key,"user":serializer.data, "encryption_key": key.hex()}, status=status.HTTP_201_CREATED)
         except IntegrityError:
@@ -73,8 +73,10 @@ def add_account(request):
     data = request.data
     if data["username"] and data["password"] and data["site"] and data["title"]:
         try:
-            # generating password before account table storing
+            # encryption key for logged in user
             key = get_user_key(request.user.username)
+            if not key:
+                return Response({"error": "Encyption key is not found for the user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             encrypted_password = encryption(data["password"], key)
             
             # changing password=data["password"] to password=encrypted_password
@@ -89,10 +91,21 @@ def add_account(request):
 @authentication_classes([SessionAuthentication,TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_account(request):
+    site = request.query_params.get("site")
+    if not site:
+        return Response({"error": "Site parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
     try:
-        account = Account.objects.get(owner=request.user,site=request.query_params.get("site"))
+        account = Account.objects.get(owner=request.user,site=site)
+        key = get_user_key(request.user.username)
+        if not key:
+            return Response({"error": "Encryption key not found for the user."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        decrypted_password = decrypt_msg(account.password, key)
         serializer = AccountSerializer(instance=account)
-        return Response({"account":serializer.data})
+        #adding decrypted password to serialized account data
+        account_data = serializer.data
+        account_data["decrypted_password"] = decrypted_password
+        
+        return Response({"account": account_data})
     except Account.DoesNotExist:
         return Response({}, status=status.HTTP_404_NOT_FOUND)
 
