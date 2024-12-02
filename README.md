@@ -4,6 +4,13 @@ Ensure Python and pip are installed
 
 Install Django with `pip install django djangorestframwork django-cors-headers pycryptodome python-dotenv django-otp django-otp-email` in an admin-level console
 
+Create a file named `.env` in the root folder. Define the variables as follows:
+
+```
+EMAIL_HOST_USER=exampleemail@email.com
+EMAIL_HOST_PASSWORD=xxxx yyyy zzzz
+```
+
 Navigate to the `backend` file inside a console
 
 If running for the first time or changes have been made, run `py manage.py makemigrations` and `py manage.py migrate`
