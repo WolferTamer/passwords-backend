@@ -117,7 +117,7 @@ def get_account(request):
             if otp_device.verify_token(token): # Uses verify_token from EmailOTPDevide to validate token
                 # If the token is valid, return the account information
                 return Response({"message": "OTP sent successfully", 
-                                "account":serializer.data}, status=status.HTTP_200_OK)
+                                "account":account_data}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Invalid or expired OTP code."}, status=400)
         # If there is no code sent, send a new OTP
