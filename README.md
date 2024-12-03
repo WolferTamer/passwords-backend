@@ -2,7 +2,7 @@
 
 Ensure Python and pip are installed
 
-Install Django with `pip install django djangorestframwork django-cors-headers pycryptodome python-dotenv django-otp` in an admin-level console
+Install Django with `pip install django djangorestframework django-cors-headers pycryptodome python-dotenv django-otp` in an admin-level console
 
 Create a file named `.env` in the root folder. Define the variables as follows:
 
